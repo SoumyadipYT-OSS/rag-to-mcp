@@ -1,24 +1,12 @@
-# skills.md — UC-MCP MCP Server
-# INSTRUCTIONS:
-# 1. Open your AI tool
-# 2. Paste the full contents of uc-mcp/README.md
-# 3. Use this prompt:
-#    "Read this UC README. Generate a skills.md YAML defining the two
-#     skills: query_policy_documents and serve_mcp. Each skill needs:
-#     name, description, input, output, error_handling.
-#     error_handling must address the failure mode in the README.
-#     Output only valid YAML."
-# 4. Paste the output below, replacing this placeholder
-
 skills:
   - name: query_policy_documents
-    description: "[FILL IN]"
-    input: "[FILL IN: question string]"
-    output: "[FILL IN: MCP content format — content array + isError]"
-    error_handling: "[FILL IN: what happens when RAG refuses or raises exception]"
+    description: "Accepts a question string, forwards it to the RAG server (rag_server.py or stub_rag.py fallback), and returns the answer in MCP content format."
+    input: "question (str) — a policy question about CMC HR, IT, or Finance policies."
+    output: "A dict with keys: content (list of {type: text, text: str}), isError (bool)."
+    error_handling: "If the RAG server returns refused=True, return isError: true with the refusal message as content. If the RAG server raises an exception, return isError: true with the error message. Never return an empty content array on failure."
 
   - name: serve_mcp
-    description: "[FILL IN]"
-    input: "[FILL IN: HTTP POST with JSON-RPC body]"
-    output: "[FILL IN: JSON-RPC 2.0 response, always HTTP 200]"
-    error_handling: "[FILL IN: unknown method → -32601, malformed request → -32700]"
+    description: "Starts an HTTP server on a configurable port (default 8765) and dispatches incoming JSON-RPC 2.0 POST requests to tools/list or tools/call handlers."
+    input: "port (int, default 8765)."
+    output: "Runs the server indefinitely until interrupted. Returns JSON-RPC 2.0 compliant responses (HTTP 200 for all application-level responses)."
+    error_handling: "Unknown JSON-RPC methods return error code -32601 (Method not found). Malformed JSON bodies return error code -32700 (Parse error). All error responses use HTTP 200 with isError in the result payload."
