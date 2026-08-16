@@ -1,0 +1,6 @@
+complaint_id,category,priority,reason,flag
+KM-202401,Heritage Damage,Standard,Heritage lamp post knocked over,
+KM-202402,Heritage Damage,Standard,"Report mentions ""Historic tram road cobblestones broken up by cable laying work.""",
+KM-202410,Pothole,Standard,Description explicitly mentions 'Pothole causing tyre blowouts',
+KM-202411,Pothole,Standard,"The complaint mentions a ""Deep pothole"" with ""Accident risk"".",
+KM-202434,Heritage Damage,Standard,"Complaint states ""heritage stone not replaced"" following street paving removal.",
