@@ -31,7 +31,27 @@ def call_llm(prompt: str) -> str:
     """
     Call Gemini Flash with the given prompt.
     Returns the text response as a string.
+    Uses the new google.genai SDK (replaces deprecated google.generativeai).
     """
+    # Load .env if GEMINI_API_KEY is not already set
+    if not os.environ.get("GEMINI_API_KEY"):
+        cur = os.path.abspath(os.path.dirname(__file__))
+        for _ in range(4):
+            env_path = os.path.join(cur, ".env")
+            if os.path.exists(env_path):
+                with open(env_path, "r") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith("#") or "=" not in line:
+                            continue
+                        k, _, v = line.partition("=")
+                        k = k.strip()
+                        v = v.strip().strip('"').strip("'")
+                        if k not in os.environ:
+                            os.environ[k] = v
+                break
+            cur = os.path.dirname(cur)
+
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return (
@@ -40,13 +60,23 @@ def call_llm(prompt: str) -> str:
             "Prompt that would have been sent:\n" + prompt[:500] + "..."
         )
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
+        from google import genai
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=prompt
+        )
         return response.text
     except ImportError:
-        return "[ERROR] google-generativeai not installed. Run: pip3 install google-generativeai"
+        # Fallback to deprecated google.generativeai if google.genai not available
+        try:
+            import google.generativeai as old_genai  # type: ignore
+            old_genai.configure(api_key=api_key)
+            model = old_genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+            return response.text
+        except Exception as e2:
+            return f"[LLM ERROR] {str(e2)}"
     except Exception as e:
         return f"[LLM ERROR] {str(e)}"
 
